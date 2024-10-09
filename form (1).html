@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odyssey Funding - Apply Now</title>
+    <link rel="stylesheet" href="form-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1 class="main-title">Apply for Funding</h1>
+    </header>
+
+    <main>
+        <div class="form-container">
+            <form action="https://formspree.io/f/https://formspree.io/f/mjkbnnre
+" method="POST">
+                
+                <div class="form-bubble">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-bubble">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-bubble">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+
+                <div class="form-bubble">
+                    <label for="business">Business Name</label>
+                    <input type="text" id="business" name="business" required>
+                </div>
+
+                <div class="form-bubble">
+                    <label for="amount">Funding Amount Requested</label>
+                    <input type="number" id="amount" name="amount" required>
+                </div>
+
+                <div class="form-bubble">
+                    <label for="bank_statements">Upload Last 4 Months of Bank Statements</label>
+                    <input type="file" id="bank_statements" name="bank_statements[]" accept=".pdf,.doc,.docx,.jpg,.png" multiple required>
+                </div>
+
+                <div class="form-bubble">
+                    <button type="submit" class="submit-button">Submit Application</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="go-back-container">
+            <button onclick="history.back()" class="go-back-button">Go Back to Previous Page</button>
+        </div>
+    </main>
+
+    <footer>
+        <p>Contact us today at <strong>info@odysseyfunding.com</strong></p>
+    </footer>
+</body>
+</html>
