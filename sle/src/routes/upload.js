@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import dayjs from 'dayjs';
 import db from '../lib/db.js';
+import { computeSleScore } from '../lib/sleScore.js';
 
 const router = Router();
 
@@ -45,7 +46,25 @@ router.post('/upload/:token', upload.array('statements', 3), (req, res) => {
   }
 
   db.prepare('UPDATE leads SET docs_received_at = ?, updated_at = ? WHERE id = ?').run(now, now, lead.id);
-  res.render('pages/thankyou', { title: 'Uploaded', link: null });
+  // Recompute SLE with docs flag and show offer range
+  const { raw, norm } = computeSleScore({
+    depositsBand: lead.deposits_band,
+    timeInBiz: lead.time_in_biz,
+    state: lead.state,
+    industry: lead.industry,
+    partnerId: lead.partner_id,
+    docsReceived: true
+  });
+  const status = norm >= 7 ? 'QUALIFIED' : 'DISQUALIFIED';
+  // Dumb offer curve: 1-6x monthly deposits proxy
+  const bandMult = { '<25k': [0.5, 1.5], '25-50k': [1, 2.5], '50-100k': [1.5, 3.5], '>100k': [2, 4.5] }[lead.deposits_band] || [1,2];
+  const monthly = { '<25k': 20000, '25-50k': 35000, '50-100k': 75000, '>100k': 125000 }[lead.deposits_band] || 30000;
+  const offerMin = Math.round(monthly * bandMult[0]);
+  const offerMax = Math.round(monthly * bandMult[1]);
+  db.prepare('UPDATE leads SET sle_raw = ?, sle_norm = ?, status = ?, offer_min = ?, offer_max = ? WHERE id = ?')
+    .run(raw, norm, status, offerMin, offerMax, lead.id);
+
+  res.render('pages/offer', { title: 'Offer Range', offerMin, offerMax });
 });
 
 export default router;

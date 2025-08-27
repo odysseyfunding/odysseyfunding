@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 import applyRoutes from './routes/apply.js';
 import uploadRoutes from './routes/upload.js';
 import microRoutes from './routes/micropages.js';
+import partnerRoutes from './routes/partner.js';
 
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
@@ -30,6 +31,7 @@ app.get('/', (req, res) => {
 app.use(applyRoutes);
 app.use(uploadRoutes);
 app.use(microRoutes);
+app.use(partnerRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err);

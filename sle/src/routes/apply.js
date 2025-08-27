@@ -3,6 +3,7 @@ import { customAlphabet } from 'nanoid';
 import dayjs from 'dayjs';
 import db from '../lib/db.js';
 import { sendSms } from '../lib/sms.js';
+import { computeSleScore } from '../lib/sleScore.js';
 
 const nano = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 16);
 const router = Router();
@@ -42,6 +43,18 @@ router.post('/apply', async (req, res) => {
     uploadToken,
     uploadExpires.valueOf()
   );
+
+  // Compute SLE and gate
+  const { raw, norm } = computeSleScore({
+    depositsBand: req.body.deposits_band,
+    timeInBiz: req.body.time_in_biz,
+    state: req.body.state,
+    industry: req.body.industry,
+    partnerId,
+    docsReceived: false
+  });
+  const status = norm >= 7 ? 'QUALIFIED' : 'DISQUALIFIED';
+  db.prepare('UPDATE leads SET sle_raw = ?, sle_norm = ?, status = ? WHERE id = ?').run(raw, norm, status, id);
 
   const link = `${process.env.PUBLIC_URL || ''}/upload/${uploadToken}`.replace(/\/$/, '');
   const smsBody = `Got it—ready for a same-day offer? Upload 3 bank statements: ${link} (expires in 72h). Reply STOP to opt out.`;

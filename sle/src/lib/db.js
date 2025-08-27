@@ -38,4 +38,18 @@ CREATE TABLE IF NOT EXISTS uploads (
 );
 `);
 
+// Ensure new columns exist when upgrading
+function ensureColumn(table, name, ddl) {
+  const row = db.prepare(`PRAGMA table_info(${table})`).all().find(c => c.name === name);
+  if (!row) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${ddl}`);
+  }
+}
+
+ensureColumn('leads', 'sle_raw', 'INTEGER');
+ensureColumn('leads', 'sle_norm', 'REAL');
+ensureColumn('leads', 'status', 'TEXT');
+ensureColumn('leads', 'offer_min', 'INTEGER');
+ensureColumn('leads', 'offer_max', 'INTEGER');
+
 export default db;
