@@ -1,0 +1,31 @@
+{
+  "name": "sle-mvp",
+  "version": "1.0.0",
+  "description": "Signal-to-Lead Engine MVP",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon -x node src/server.js",
+    "start": "node src/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "better-sqlite3": "^12.2.0",
+    "compression": "^1.8.1",
+    "dayjs": "^1.11.14",
+    "dotenv": "^17.2.1",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.1",
+    "multer": "^2.0.2",
+    "nanoid": "^5.1.5",
+    "twilio": "^5.8.0",
+    "zod": "^4.1.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
