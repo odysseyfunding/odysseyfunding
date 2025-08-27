@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Thanks!</h1>
+      <% if (link) { %>
+        <p>We texted your secure upload link. If you prefer, use this link now:</p>
+        <p><a href="<%= link %>"><%= link %></a></p>
+      <% } else { %>
+        <p>We received your documents. We’ll circle back shortly with an offer range.</p>
+      <% } %>
+      <p class="small">Reply STOP to opt out anytime.</p>
+    </main>
+  </body>
+  </html>
+

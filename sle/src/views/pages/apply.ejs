@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main>
+      <h1>10‑min Fit Check</h1>
+      <form method="post" action="/apply<% if (partnerId) { %>?partner=<%= partnerId %><% } %>">
+        <div class="grid">
+          <label>Business name<input name="business_name" required /></label>
+          <label>Owner<input name="owner_name" required /></label>
+          <label>Phone<input name="phone" type="tel" required /></label>
+          <label>Email<input name="email" type="email" required /></label>
+          <label>State<input name="state" maxlength="2" required /></label>
+          <label>Industry<input name="industry" required /></label>
+          <label>Deposits band
+            <select name="deposits_band" required>
+              <option value="<25k">< 25k</option>
+              <option value="25-50k">25–50k</option>
+              <option value="50-100k">50–100k</option>
+              <option value=">100k">> 100k</option>
+            </select>
+          </label>
+          <label>Time in biz
+            <select name="time_in_biz" required>
+              <option value="<6m">< 6 months</option>
+              <option value="6-12m">6–12 months</option>
+              <option value="1-2y">1–2 years</option>
+              <option value=">2y">> 2 years</option>
+            </select>
+          </label>
+        </div>
+        <label><input type="checkbox" name="tcp_consent" required /> I agree to TCPA consent</label>
+        <button type="submit">Check eligibility</button>
+        <p class="small">Secure bank upload link will be sent by SMS.</p>
+      </form>
+    </main>
+  </body>
+  </html>
+

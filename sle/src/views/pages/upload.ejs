@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Secure Bank Upload</h1>
+      <form method="post" enctype="multipart/form-data">
+        <label>Upload 3 latest bank statements
+          <input type="file" name="statements" accept="application/pdf,image/*" multiple required />
+        </label>
+        <button type="submit">Submit</button>
+        <p class="small">Link expires in 72 hours.</p>
+      </form>
+    </main>
+  </body>
+  </html>
+
