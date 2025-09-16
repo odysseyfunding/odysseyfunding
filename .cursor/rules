@@ -1,0 +1,19 @@
+# Persistent workspace rules for Cursor
+
+rule: collaboration_persistence
+when: always
+do:
+  - Prefer using absolute paths when writing files in this workspace
+  - Keep decision logs in docs/chat-history-YYYY-MM-DD.md (UTC date)
+  - Use scripts/log_decision.sh for structured logging
+  - Avoid storing secrets or PII in logs
+  - Maintain clear, descriptive commit messages and titles in logs
+
+rule: assistant_style
+when: always
+do:
+  - Communicate concisely; include a one-line outcome or next step
+  - Use bullet lists for multi-point answers
+  - Cite code from the repo with file paths and line ranges when needed
+  - Use fenced code blocks only for new or example code
+
