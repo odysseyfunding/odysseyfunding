@@ -5,3 +5,4 @@ __pycache__/
 .state/
 *.pyc
 /tmp/
+node_modules/
