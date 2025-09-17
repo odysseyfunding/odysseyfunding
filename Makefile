@@ -2,7 +2,7 @@ PY=python
 PIP=pip
 VENV=.venv
 
-.PHONY: venv install run api cli test docker-build docker-run
+.PHONY: venv install run api cli test docker-build docker-run setup
 
 venv:
 	$(PY) -m venv $(VENV)
@@ -11,11 +11,10 @@ venv:
 install:
 	. $(VENV)/bin/activate; $(PIP) install -r requirements.txt
 
-run:
-	. $(VENV)/bin/activate; $(PY) -m signal_to_lead.service --host 0.0.0.0 --port 8000
+setup: venv install
 
-cli:
-	. $(VENV)/bin/activate; $(PY) -m signal_to_lead.cli score-route --config configs/default.yaml --in data/sample_leads.jsonl --out /tmp/out.jsonl
+run:
+	. $(VENV)/bin/activate; $(PY) scripts/cli.py "operations manager" --location "US" --out /tmp/leads.csv
 
 docker-build:
 	docker build -t signal-to-lead:latest .
@@ -24,4 +23,4 @@ docker-run:
 	docker run --rm -p 8000:8000 signal-to-lead:latest
 
 test:
-	@echo "(tests pending)"
+	. $(VENV)/bin/activate; pytest -q

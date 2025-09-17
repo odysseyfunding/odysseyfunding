@@ -1,58 +1,32 @@
-## Signal-to-Lead Engine (Scoring and Routing)
+## Lead Generation Bot — Hiring Signals to Funding Prospects
 
-A lightweight, configurable engine to score incoming leads from behavioral and firmographic signals, then route them to the appropriate owner/team using rule-based filtering and round-robin.
+Identify established businesses with hiring deficits (many open roles, repeat postings, long-open listings) and generate enriched leads for merchant cash advance outreach.
 
-### Features
-- Configurable scoring weights with time-decay
-- Rule-based routing with queue-level round-robin
-- FastAPI service for real-time scoring/routing
-- CLI for batch processing JSONL/CSV
+### Structure
+- `src/sources/`: Indeed, LinkedIn, Craigslist clients (stubs)
+- `src/enrich/`: company profile and contacts enrichment (stubs)
+- `src/storage/`: Google Sheets storage
+- `src/scoring.py`: deficit detection and lead scoring
+- `scripts/cli.py`: CLI entrypoint
+- `tests/`: unit tests for scoring and normalization
+- `docs/`: spec and datasources
+
+### Requirements
+- Python 3.11
+- Credentials via environment variables (.env example provided)
 
 ### Quickstart
-
-1) Install dependencies
 ```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+make setup
+make test
+source .venv/bin/activate
+python scripts/cli.py "operations manager" --location "US" --out /tmp/leads.csv
 ```
 
-2) Try the CLI on sample data
-```bash
-python -m signal_to_lead.cli score-route \
-  --config configs/default.yaml \
-  --in data/sample_leads.jsonl \
-  --out /tmp/scored_routed.jsonl
-```
+To enable Google Sheets export, set `GOOGLE_SERVICE_ACCOUNT_JSON` to the JSON content, `GOOGLE_SHEETS_SPREADSHEET_ID`, and optional `GOOGLE_SHEETS_WORKSHEET`.
 
-3) Run the API
-```bash
-python -m signal_to_lead.service --host 0.0.0.0 --port 8000
-# Then POST to http://localhost:8000/score-route
-```
+### Environment (.env)
+See `.env.example` and export variables prior to running.
 
-### Configuration
-See `configs/default.yaml` for a documented example. You can tune scoring weights, half-life for decay, and routing queues/filters/owners.
-
-### File Layout
-- `signal_to_lead/`: package with engine modules
-- `configs/`: YAML configuration files
-- `data/`: sample input datasets
-
-### Input Format
-The engine expects lead objects in JSON with fields such as:
-```json
-{
-  "id": "lead_123",
-  "country": "US",
-  "state": "CA",
-  "employee_count": 120,
-  "firmographic_score": 0.7,
-  "intent_score": 0.6,
-  "metrics": {"email_opens": 3, "email_clicks": 1, "site_visits": 5},
-  "last_activity_at": "2025-08-26T12:00:00Z",
-  "product_interest": ["core"]
-}
-```
-
-### License
-MIT
+### Notes
+- External API calls are stubbed; replace with SerpAPI/ZeroBounce/GSuite integrations where indicated.
