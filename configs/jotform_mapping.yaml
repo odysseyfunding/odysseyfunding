@@ -1,0 +1,18 @@
+# Map internal Lead fields to JotForm payload keys
+# Left side: internal field keys used by ingest.normalize_jotform_payload
+
+id: submission_id
+email: email
+company: company
+country: country
+state: state
+employee_count: employees
+revenue: revenue
+product_interest: product_interest
+firmographic_score: firmographic_score
+intent_score: intent_score
+metrics.email_opens: email_opens
+metrics.email_clicks: email_clicks
+metrics.site_visits: site_visits
+last_activity_at: last_activity_at
+created_at: created_at
