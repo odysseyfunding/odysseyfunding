@@ -4,9 +4,12 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "scrape": "node src/scrape-directory.mjs"
+    "scrape": "node src/scrape-directory.mjs",
+    "serve": "node src/server.mjs"
   },
   "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
     "playwright": "^1.48.0"
   }
 }
