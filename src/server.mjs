@@ -103,6 +103,10 @@ app.get("/scrape/stream", async (req, res) => {
     retries: req.query.retries ? Number(req.query.retries) : undefined,
     headless: true,
     blockAssets: req.query.blockAssets ? String(req.query.blockAssets).toLowerCase() !== 'false' : true,
+    followWebsite: req.query.followWebsite ? String(req.query.followWebsite).toLowerCase() !== 'false' : undefined,
+    externalDepth: req.query.externalDepth ? Number(req.query.externalDepth) : undefined,
+    sameOriginOnly: req.query.sameOriginOnly ? String(req.query.sameOriginOnly).toLowerCase() !== 'false' : undefined,
+    maxExternalPages: req.query.maxExternalPages ? Number(req.query.maxExternalPages) : undefined,
   };
 
   res.writeHead(200, {

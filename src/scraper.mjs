@@ -16,6 +16,18 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function normalizeUrl(baseUrl, href) {
+  try {
+    return new URL(href, baseUrl).toString();
+  } catch {
+    return null;
+  }
+}
+
+function unique(arr) {
+  return Array.from(new Set(arr.filter(Boolean)));
+}
+
 async function textOrNull(page, selector) {
   try {
     const locator = page.locator(selector).first();
@@ -64,6 +76,26 @@ function buildOptions(userOptions = {}) {
     retries: 2,
     headless: true,
     blockAssets: true,
+    followWebsite: true,
+    externalDepth: 1,
+    sameOriginOnly: true,
+    maxExternalPages: 6,
+    contactPaths: [
+      "/contact",
+      "/contact-us",
+      "/contactus",
+      "/about",
+      "/about-us",
+      "/team",
+      "/impressum",
+      "/legal",
+      "/company",
+      "/kontakt",
+      "/contacts",
+      "/support",
+      "/get-in-touch",
+      "/find-us",
+    ],
     ...userOptions,
   };
   if (options.concurrency < 1) options.concurrency = 1;
@@ -106,6 +138,118 @@ export async function scrapeDirectory({
   const results = [];
   let pageNum = 1;
   const visitedDetailUrls = new Set();
+
+  async function extractEmailsPhones(page) {
+    try {
+      const { emails, phones } = await page.evaluate(() => {
+        const text = document.body ? document.body.innerText : "";
+        const hrefs = Array.from(document.querySelectorAll('a[href]'))
+          .map((a) => a.getAttribute('href') || '')
+          .join('\n');
+        const source = `${text}\n${hrefs}`;
+        const emailRegex = /[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+/g;
+        const phoneRegex = /(?:\+\d{1,3}[\s()-]*)?(?:\d[\s()-]*){7,15}/g;
+        const foundEmails = (source.match(emailRegex) || []).map((e) => e.trim());
+        const foundPhones = (source.match(phoneRegex) || [])
+          .map((p) => p.replace(/\s+/g, ' ').trim())
+          .filter((p) => p.replace(/\D/g, '').length >= 7);
+        return { emails: Array.from(new Set(foundEmails)), phones: Array.from(new Set(foundPhones)) };
+      });
+      return { emails: emails || [], phones: phones || [] };
+    } catch {
+      return { emails: [], phones: [] };
+    }
+  }
+
+  async function discoverContactsOnWebsite(page, websiteUrl, options) {
+    const origin = (() => { try { return new URL(websiteUrl).origin; } catch { return null; } })();
+    if (!origin) return { emails: [], phones: [] };
+
+    const visited = new Set();
+    const queue = [];
+
+    // Seed queue: homepage + common contact paths
+    queue.push({ url: websiteUrl, depth: 0 });
+    for (const path of options.contactPaths) {
+      const abs = normalizeUrl(websiteUrl, path);
+      if (abs) queue.push({ url: abs, depth: 1 });
+    }
+
+    const maxPages = Math.max(1, options.maxExternalPages);
+    const maxDepth = Math.max(0, options.externalDepth);
+
+    const aggregate = { emails: [], phones: [] };
+
+    while (queue.length && visited.size < maxPages) {
+      const { url, depth } = queue.shift();
+      if (visited.has(url)) continue;
+      visited.add(url);
+
+      if (options.sameOriginOnly) {
+        try {
+          if (new URL(url).origin !== origin) continue;
+        } catch {
+          continue;
+        }
+      }
+
+      try {
+        await withRetries(
+          async () => {
+            await page.goto(url, { waitUntil: "domcontentloaded", timeout: options.navTimeoutMs });
+          },
+          options.retries,
+          400
+        );
+      } catch {
+        continue;
+      }
+
+      const { emails, phones } = await extractEmailsPhones(page);
+      aggregate.emails.push(...emails);
+      aggregate.phones.push(...phones);
+
+      if (depth < maxDepth && visited.size < maxPages) {
+        try {
+          const candidateHrefs = await page.evaluate(() =>
+            Array.from(document.querySelectorAll('a[href]'))
+              .map((a) => ({ href: a.getAttribute('href') || '', text: (a.textContent || '').toLowerCase() }))
+              .filter((x) => x.href)
+          );
+
+          const interesting = candidateHrefs.filter((x) => {
+            const t = x.text || '';
+            const h = x.href.toLowerCase();
+            return (
+              h.includes('contact') ||
+              h.includes('about') ||
+              h.includes('impressum') ||
+              h.includes('legal') ||
+              h.includes('team') ||
+              t.includes('contact') ||
+              t.includes('about') ||
+              t.includes('impressum') ||
+              t.includes('legal') ||
+              t.includes('team')
+            );
+          });
+
+          for (const link of interesting) {
+            const abs = normalizeUrl(url, link.href);
+            if (abs && !visited.has(abs)) {
+              queue.push({ url: abs, depth: depth + 1 });
+            }
+          }
+        } catch {
+          // ignore extraction failures
+        }
+      }
+    }
+
+    aggregate.emails = unique(aggregate.emails);
+    aggregate.phones = unique(aggregate.phones);
+    return aggregate;
+  }
 
   async function processDetailUrls(detailUrls) {
     const urlsToProcess = detailUrls.filter((url) => {
@@ -151,9 +295,20 @@ export async function scrapeDirectory({
           }
 
           const name = await textOrNull(detailPage, SELECTORS.name);
-          const phone = await textOrNull(detailPage, SELECTORS.phone);
-          const email = await textOrNull(detailPage, SELECTORS.email);
+          let phone = await textOrNull(detailPage, SELECTORS.phone);
+          let email = await textOrNull(detailPage, SELECTORS.email);
           const website = await attrOrNull(detailPage, SELECTORS.website, "href");
+
+          // If requested, attempt to discover contacts on the external website
+          if (website && options.followWebsite) {
+            try {
+              const contacts = await discoverContactsOnWebsite(detailPage, website, options);
+              if (!email && contacts.emails.length) email = contacts.emails[0];
+              if (!phone && contacts.phones.length) phone = contacts.phones[0];
+            } catch {
+              // ignore external crawl failures
+            }
+          }
 
           const record = { name, phone, email, website, url: detailUrl };
           if (typeof onResult === "function") onResult(record);
